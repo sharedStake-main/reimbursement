@@ -11,7 +11,7 @@ with open('data/secret.json') as secret_json:
 PROVIDER = secret['provider']
 w3 = Web3(HTTPProvider(PROVIDER))
 
-blockNum = 12688544-1  # first sell on rugpull https://etherscan.io/tx/0x0ba4dff34be3b9f9f4745b6e783c108e98172dfa6f5dccd9f833d3521348d9fd
+blockNum = 12688512-1  # first sell on rugpull https://etherscan.io/tx/0x6c13433b0c8539ab2fdf892eb4457d0c045db22755fa9c053f906c257de89a41
 
 
 def createGeysers(g_addresses):
