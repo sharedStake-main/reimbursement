@@ -1,13 +1,13 @@
 # Reimbursement Calculation for the Lps
 
-SharedSTake suffered from an Insider Exploit on 23rd June 2021.
-This calculation is implemented to distribute the returned tokens tback to the community.
+SharedStake suffered from an Insider Exploit on 23rd June 2021.
+This calculation is implemented to distribute the returned tokens back to the community.
 
 ## Code Flow
 
 - 1: findEveryone: code first reads all the addresses that held Uniswap LP tokens.
 - 2: getSnapshot: using an archive node we get the plain balances and staked amounts for all of the addresses and filter some blacklisted addresses, such as developers, contracts or whose balances!>0
-- 3: buildData: calculates the total damage, individual damages and returned amounts for every address with some aditional info
+- 3: buildData: calculates the total damage, individual damages and returned amounts for every address with some additional stats
 
 to run locally:
 
