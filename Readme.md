@@ -9,6 +9,12 @@ This calculation is implemented to distribute the returned tokens back to the co
 - 2: getSnapshot: using an archive node we get the plain balances and staked amounts for all of the addresses and filter some blacklisted addresses, such as developers, contracts or whose balances!>0
 - 3: buildData: calculates the total damage, individual damages and returned amounts for every address with some additional stats
 
+- create a secret.json file in data/ with access point to archive nodes, I used:
+
+```
+{"provider":"https://eth-mainnet.alchemyapi.io/v2/your-code"}
+```
+
 to run locally:
 
 ```
