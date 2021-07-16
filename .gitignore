@@ -1,0 +1,4 @@
+data/secret.json
+results/
+env/
+__pycache__
