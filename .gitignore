@@ -1,4 +1,4 @@
 data/secret.json
-results/
+results/*
 env/
 __pycache__
