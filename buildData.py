@@ -34,7 +34,7 @@ def getWithdrawals(c_address):
     event_sig_hash = "0xdccd412f0b1252819cb1fd330b93224ca42612892bb3f4f789976e6d81936496"  # burn
     filterer = {
         'fromBlock': blockNum,  # after rug
-        'toBlock': 12834615,
+        'toBlock': 12842792,
         'address': c_address,
         'topics': [event_sig_hash],
     }
