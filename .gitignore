@@ -1,5 +1,7 @@
 data/secret.json
 results/*
 !results/.gitkeep 
+!results/result
+!results/final
 env/
 __pycache__

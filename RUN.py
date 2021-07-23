@@ -11,7 +11,7 @@ with open('data/secret.json') as secret_json:
 
 PROVIDER = secret['provider']
 w3 = Web3(HTTPProvider(PROVIDER))
-
+BLOCK = 12688512-1  # first sell on rugpull https://etherscan.io/tx/0x6c13433b0c8539ab2fdf892eb4457d0c045db22755fa9c053f906c257de89a41
 
 addresses = {
     "ETH_UNI": Web3.toChecksumAddress(
@@ -27,11 +27,15 @@ geysers = {
 
 returned = {
     "vETH2_UNI": 101.14731789866243604*1e18,
-    "ETH_UNI": 30*1e18
+    "ETH_UNI": 27*1e18
 }
 if __name__ == "__main__":
+    lastBlock = w3.eth.get_block('latest')  # get current balances
+    lastBlock = lastBlock.number
+    print(f"snapshot Block:{BLOCK},last Block:{lastBlock}")
     for key, c_address in addresses.items():
         print(f"\nLP token : {key}")
         GetEveryone(key, c_address)
-        GetSnapshot(key, c_address, geysers[key])
-        BuildData(key, c_address, returned[key])
+        GetSnapshot(key, c_address, geysers[key], BLOCK, lastBlock)
+        BuildData(key, c_address, returned[key], BLOCK, lastBlock)
+    print("DONE")

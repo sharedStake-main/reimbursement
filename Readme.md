@@ -32,19 +32,22 @@ Output is shown in .xlsx format. Also the printed lines should be noted for stat
 Example:
 
 ```
+snapshot Block:12688511,last Block:12881575
+
 LP token : ETH_UNI
 Unique address count : 449
 Addresses w balance on Snapshot: 127
 Total of 3289778062055932810260 LP tokens.
-Total of 102.29697003994366 tokens were Provided as Liq.
-total withdrawals: 11.257683145694143
-Total Loss: 85.79470617398087, returned: 30.000000000000004, ratio:  34.967192426959045 %
+Total of 102.29697003994367 tokens were Provided as Liq.
+total withdrawals: 12.303429382375178
+Total Loss: 90.8146362922706, returned: 26.999999999999993, ratio:  29.73089041848424 %
 
 LP token : vETH2_UNI
 Unique address count : 107
 Addresses w balance on Snapshot: 58
 Total of 4739998936952645723172 LP tokens.
-Total of 148.66982032805765 tokens were Provided as Liq.
-total withdrawals: 29.008803672912887
-Total Loss: 113.40018559576349, returned: 101.14731789866241, ratio:  89.19501971471303 %
+Total of 148.6698203280576 tokens were Provided as Liq.
+total withdrawals: 30.125608482028483
+Total Loss: 118.61544841113962, returned: 101.14731789866241, ratio:  85.27330904493152 %
+DONE
 ```

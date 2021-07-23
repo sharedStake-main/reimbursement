@@ -29,12 +29,12 @@ def calculateWithdrawals(event):
     return None
 
 
-def getWithdrawals(c_address):
+def getWithdrawals(c_address, BLOCK, lastBlock):
     TOTAL = 0
     event_sig_hash = "0xdccd412f0b1252819cb1fd330b93224ca42612892bb3f4f789976e6d81936496"  # burn
     filterer = {
-        'fromBlock': blockNum,  # after rug
-        'toBlock': 12842792,
+        'fromBlock': BLOCK,  # after rug
+        'toBlock': lastBlock,
         'address': c_address,
         'topics': [event_sig_hash],
     }
@@ -50,37 +50,41 @@ def getWithdrawals(c_address):
     return withdrawalList
 
 
-def getCurrentReserve(c_address):
-    contract = w3.eth.contract(abi=DATA['abi'], address=c_address)
-    reserves = contract.functions.getReserves().call()
-    return reserves[1]
+# def getCurrentReserve(c_address):
+#     contract = w3.eth.contract(abi=DATA['abi'], address=c_address)
+#     reserves = contract.functions.getReserves().call()
+#     return reserves[1]
 
 
-def buildReport(BALANCES, WITHDRAWALS, returned):
+def buildReport(BALANCES, WITHDRAWALS, returned, lastBALANCES, BLOCK):
     etherscanPre = "https://etherscan.io/tx/"
-    BlDf = pd.DataFrame(BALANCES, index=[f"bal_on_{blockNum}"])
+    BlDf = pd.DataFrame(BALANCES, index=[f"bal_on_{BLOCK}"])
     BlDf = BlDf.transpose()
     BlDf['withdrawn'] = 0.0
     BlDf['burn_TXs'] = ""
+    BlDf['current'] = 0.0
     for w in WITHDRAWALS:
         if w[1] in BlDf.index:
             BlDf.loc[w[1], "withdrawn"] += w[2]
+            if w[1] in lastBALANCES:
+                BlDf.loc[w[1], "current"] += lastBALANCES[w[1]]
             if(BlDf.loc[w[1], "burn_TXs"] == ""):
                 BlDf.loc[w[1], "burn_TXs"] = (etherscanPre + w[0])
             else:
                 BlDf.loc[w[1], "burn_TXs"] = (
                     BlDf.loc[w[1], "burn_TXs"]+" \ "+etherscanPre+w[0])
 
-    BlDf['loss'] = BlDf[f"bal_on_{blockNum}"] - BlDf["withdrawn"]
+    BlDf['loss'] = BlDf[f"bal_on_{BLOCK}"] - BlDf["withdrawn"]
+    BlDf['loss'] = BlDf['loss'] - BlDf['current']
     BlDf['returned'] = (BlDf['loss'] / BlDf['loss'].sum())*returned
     return BlDf
 
 
-def getPrice(c_address):
+def getPrice(c_address, BLOCK):
     contract = w3.eth.contract(abi=DATA['abi'], address=c_address)
     EthPerToken = 0
-    reserves = contract.functions.getReserves().call(block_identifier=blockNum)
-    totalSupply = contract.functions.totalSupply().call(block_identifier=blockNum)
+    reserves = contract.functions.getReserves().call(block_identifier=BLOCK)
+    totalSupply = contract.functions.totalSupply().call(block_identifier=BLOCK)
     # not a problem since both tokens are second in uni pools
     EthReserve = reserves[1]
     EthPerToken = EthReserve/totalSupply
@@ -95,20 +99,28 @@ def convertBalances(price, BALANCES):
     return BALANCES
 
 
-def BuildData(key, c_address, returned):
-    price = getPrice(c_address)
+def BuildData(key, c_address, returned, BLOCK, lastBlock):
     with open(f'results/BALANCES_{key}.json') as B_json:
         BALANCES = json.load(B_json)
+    with open(f'results/lastBALANCES_{key}.json') as B_json:
+        lastBALANCES = json.load(B_json)
+    price = getPrice(c_address, BLOCK)
     BALANCES = convertBalances(price, BALANCES)
+    lastPrice = getPrice(c_address, lastBlock)
+    lastBALANCES = convertBalances(lastPrice, lastBALANCES)
     print(
         f"Total of {sum(BALANCES.values())/1e18} tokens were Provided as Liq.")
 
-    WITHDRAWALS = getWithdrawals(c_address)
-    df = buildReport(BALANCES, WITHDRAWALS, returned)
-    df[["returned", "withdrawn", "loss", f"bal_on_{blockNum}"]] = df[[
-        "returned", "withdrawn", "loss", f"bal_on_{blockNum}"]].apply(lambda x: x/1e18)
+    WITHDRAWALS = getWithdrawals(c_address, BLOCK, lastBlock)
+    df = buildReport(BALANCES, WITHDRAWALS, returned, lastBALANCES, BLOCK)
+    df[["returned", "withdrawn", "loss", "current", f"bal_on_{BLOCK}"]] = df[[
+        "returned", "withdrawn", "loss", "current", f"bal_on_{BLOCK}"]].apply(lambda x: x/1e18)
 
-    cr = getCurrentReserve(c_address)
+    cr = df['current'].sum()
+    print(cr)
     print(
-        f"Total Loss: {(df['loss'].sum()-(cr/1e18))}, returned: {df['returned'].sum()}, ratio:  {df['returned'].sum()/(df['loss'].sum()-(cr/1e18))*100} %")
+        f"Total Loss: {(df['loss'].sum()-(cr))}, returned: {df['returned'].sum()}, ratio:  {df['returned'].sum()/(df['loss'].sum()-(cr))*100} %")
     df.to_excel(f"results/OUTPUT_{key}.xlsx")
+
+    loss = df[['returned']].copy()
+    loss.to_csv(f"results/final/FINAL_{key}.csv", float_format='%.18f')

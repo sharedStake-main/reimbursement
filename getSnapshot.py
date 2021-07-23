@@ -11,8 +11,6 @@ with open('data/secret.json') as secret_json:
 PROVIDER = secret['provider']
 w3 = Web3(HTTPProvider(PROVIDER))
 
-blockNum = 12688512-1  # first sell on rugpull https://etherscan.io/tx/0x6c13433b0c8539ab2fdf892eb4457d0c045db22755fa9c053f906c257de89a41
-
 
 def createGeysers(g_addresses):
     with open('data/geysers.json') as g_json:
@@ -25,16 +23,16 @@ def createGeysers(g_addresses):
     return geysers
 
 
-def getStaked(address, geysers):
+def getStaked(address, geysers, BLOCK):
     # get the staked balances
     balance = 0
     for geyser in geysers:
         balance += geyser.functions.balanceOf(
-            address).call(block_identifier=blockNum)
+            address).call(block_identifier=BLOCK)
     return balance
 
 
-def getBalances(c_address, g_addresses, addresses):
+def getBalances(c_address, g_addresses, addresses, BLOCK):
     BALANCES = {}
     contract = w3.eth.contract(abi=DATA['abi'], address=c_address)
     geysers = createGeysers(g_addresses)
@@ -43,28 +41,31 @@ def getBalances(c_address, g_addresses, addresses):
     for address in addresses:
         balance = 0
         balance = contract.functions.balanceOf(
-            address).call(block_identifier=blockNum)
-        balance += getStaked(address, geysers)
+            address).call(block_identifier=BLOCK)
+        balance += getStaked(address, geysers, BLOCK)
         if balance > 0:
-            BALANCES[address] = balance
+            BALANCES[Web3.toChecksumAddress(address)] = balance
         counter += 1
         print(counter, end="\r", flush=True)
     return BALANCES
 
 
-def GetSnapshot(key, c_address, g_addresses):
+def GetSnapshot(key, c_address, g_addresses, BLOCK, lastBlock):
     with open(f'results/addresses_{key}.json') as addresses_json:
         addresses = json.load(addresses_json)
-    BALANCES = getBalances(c_address, g_addresses, addresses)
-
+    BALANCES = getBalances(c_address, g_addresses, addresses, BLOCK)
+    lastBALANCES = getBalances(c_address, g_addresses, addresses, lastBlock)
     # delete blacklisted addresses: geysers, deployers, devs.
     with open('data/blacklist.json') as b_json:
         blacklist = json.load(b_json)
     for address in blacklist:
         a = Web3.toChecksumAddress(address)
         BALANCES.pop(a, None)
+        lastBALANCES.pop(a, None)
 
     print(f"Addresses w balance on Snapshot: {len(BALANCES)}")
     print(f"Total of {sum(BALANCES.values())} LP tokens.")
     with open(f'results/BALANCES_{key}.json', 'w') as out:
         json.dump(BALANCES, out)
+    with open(f'results/lastBALANCES_{key}.json', 'w') as out:
+        json.dump(lastBALANCES, out)
