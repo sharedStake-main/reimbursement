@@ -62,18 +62,17 @@ def buildReport(BALANCES, WITHDRAWALS, returned, lastBALANCES, BLOCK):
     BlDf = BlDf.transpose()
     BlDf['withdrawn'] = 0.0
     BlDf['burn_TXs'] = ""
-    BlDf['current'] = 0.0
     for w in WITHDRAWALS:
         if w[1] in BlDf.index:
             BlDf.loc[w[1], "withdrawn"] += w[2]
-            if w[1] in lastBALANCES:
-                BlDf.loc[w[1], "current"] += lastBALANCES[w[1]]
             if(BlDf.loc[w[1], "burn_TXs"] == ""):
                 BlDf.loc[w[1], "burn_TXs"] = (etherscanPre + w[0])
             else:
                 BlDf.loc[w[1], "burn_TXs"] = (
                     BlDf.loc[w[1], "burn_TXs"]+" \ "+etherscanPre+w[0])
-
+    BlDf['current'] = 0.0
+    for b in lastBALANCES:
+        BlDf.loc[b, "current"] += lastBALANCES[b]
     BlDf['loss'] = BlDf[f"bal_on_{BLOCK}"] - BlDf["withdrawn"]
     BlDf['loss'] = BlDf['loss'] - BlDf['current']
     BlDf['returned'] = (BlDf['loss'] / BlDf['loss'].sum())*returned
