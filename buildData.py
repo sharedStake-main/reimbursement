@@ -116,9 +116,8 @@ def BuildData(key, c_address, returned, BLOCK, lastBlock):
         "returned", "withdrawn", "loss", "current", f"bal_on_{BLOCK}"]].apply(lambda x: x/1e18)
 
     cr = df['current'].sum()
-    print(cr)
     print(
-        f"Total Loss: {(df['loss'].sum()-(cr))}, returned: {df['returned'].sum()}, ratio:  {df['returned'].sum()/(df['loss'].sum()-(cr))*100} %")
+        f"Total Loss: {(df['loss'].sum())}, returned: {df['returned'].sum()}, ratio:  {df['returned'].sum()/(df['loss'].sum())*100} %")
     df.to_excel(f"results/OUTPUT_{key}.xlsx")
 
     loss = df[['returned']].copy()
