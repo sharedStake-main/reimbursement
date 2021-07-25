@@ -27,7 +27,7 @@ geysers = {
 
 returned = {
     "vETH2_UNI": 101.14731789866243604*1e18,
-    "ETH_UNI": 27*1e18
+    "ETH_UNI": 26.1*1e18
 }
 if __name__ == "__main__":
     lastBlock = w3.eth.get_block('latest')  # get current balances
